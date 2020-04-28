@@ -1,0 +1,62 @@
+plugins {
+	id "idea"
+	id "groovy"
+}
+
+configurations {
+	groovy2_5
+	groovy3_0
+
+	testGroovy2_5.extendsFrom(groovy2_5)
+	testGroovy3_0.extendsFrom(groovy3_0)
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation project(":precompiled-classes")
+	groovy2_5 project(path: ":precompiled-classes", configuration: "groovy2_5")
+	groovy3_0 project(path: ":precompiled-classes", configuration: "groovy3_0")
+
+	testImplementation 'org.spockframework:spock-core:1.3-groovy-2.4'
+	testGroovy2_5 'org.spockframework:spock-core:1.3-groovy-2.5'
+	testGroovy3_0 'org.spockframework:spock-core:2.0-M2-groovy-3.0'
+}
+
+task compileGroovy2_5(type: GroovyCompile) {
+	classpath = files(configurations.groovy2_5)
+	source = sourceSets.main.groovy
+	destinationDir = new File(buildDir, "classes/groovy-2.5/main")
+}
+
+task compileGroovy3_0(type: GroovyCompile) {
+	classpath = files(configurations.groovy3_0)
+	source = sourceSets.main.groovy
+	destinationDir = new File(buildDir, "classes/groovy-3.0/main")
+}
+
+task testCompileGroovy2_5(type: GroovyCompile) {
+	classpath = files(configurations.testGroovy2_5, compileGroovy2_5, processTestResources)
+	source = sourceSets.test.groovy
+	destinationDir = new File(buildDir, "classes/groovy-2.5/test")
+}
+
+task testCompileGroovy3_0(type: GroovyCompile) {
+	classpath = files(configurations.testGroovy3_0, compileGroovy3_0, processTestResources)
+	source = sourceSets.test.groovy
+	destinationDir = new File(buildDir, "classes/groovy-3.0/test")
+}
+
+task testGroovy2_5(type: Test) {
+	classpath = files(testCompileGroovy2_5.classpath, testCompileGroovy2_5)
+	testClassesDirs = files(testCompileGroovy2_5)
+}
+
+task testGroovy3_0(type: Test) {
+	classpath = files(testCompileGroovy3_0.classpath, testCompileGroovy3_0)
+	testClassesDirs = files(testCompileGroovy3_0)
+	useJUnitPlatform()
+}
+

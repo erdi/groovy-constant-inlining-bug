@@ -1,0 +1,48 @@
+plugins {
+	id "idea"
+	id "groovy"
+}
+
+configurations {
+	groovy2_5
+	groovy3_0
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	compile 'org.codehaus.groovy:groovy-all:2.4.19'
+	groovy2_5 'org.codehaus.groovy:groovy-all:2.5.11'
+	groovy3_0 'org.codehaus.groovy:groovy-all:3.0.3'
+}
+
+tasks.withType(GroovyCompile) {
+	source = sourceSets.main.groovy
+}
+
+task compileGroovy2_5(type: GroovyCompile) {
+	classpath = files(configurations.groovy2_5, processResources)
+	destinationDir = new File(buildDir, "classes/groovy-2.5/main")
+}
+
+task compileGroovy3_0(type: GroovyCompile) {
+	classpath = files(configurations.groovy3_0, processResources)
+	destinationDir = new File(buildDir, "classes/groovy-3.0/main")
+}
+
+task jar2_5(type: Jar) {
+	from compileGroovy2_5, processResources
+	classifier = "2.5"
+}
+
+task jar3_0(type: Jar) {
+	from compileGroovy3_0, processResources
+	classifier = "3.0"
+}
+
+artifacts {
+	groovy2_5 jar2_5
+	groovy3_0 jar3_0
+}
